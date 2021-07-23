@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<project>
+    <property environment="env" />
+   <property name="mokapot-folder" value="${user.home}/mokapot-deploy"/>
+    <!-- Variables/filesets -->
+    <multirootfileset erroronmissingdir="true" id="libraries-fileset">
+        <basedir file="${mokapot-folder}/contrib/"/>
+        <!-- <basedir file="/usr/share/java/"/> -->
+        <include name="javassist.jar"/>
+        <include name="objenesis.jar"/>
+        <!-- <include name="asm-all.jar"/> -->
+        <include name="asm.jar"/>
+        <include name="asm-tree.jar"/>
+        <include name="asm-analysis.jar"/>
+        <include name="asm-commons.jar"/>
+        <include name="asm-util.jar"/> 
+        <include name="retrolambda.jar"/>
+        <!-- <include name="junit.jar"/>  -->
+        <include name="ant.jar"/>
+    </multirootfileset>
+    
+    <path id="libraries">
+        <multirootfileset refid="libraries-fileset"/>
+    </path>
+
+  
+  
+    <target name="run-millr" depends=""
+            description="run the transformation on variable $input and $output$">
+        <java classname="xyz.acygn.millr.Mill" fork="true">
+            <arg line="-o ${output} -i ${input} -f -v" />
+            <jvmarg value="-Xmx4096M"/>
+            <classpath path="${mokapot-folder}/millr.jar"/>
+            <classpath path="${mokapot-folder}/mokapot.jar"/>
+            <classpath path="${mokapot-folder}/whitelist.jar"/>
+            <classpath refid="libraries"/>
+	    <classpath path="${cp}"/>
+        </java>
+    </target>
+
+
+    <!-- note: millr is an executable, not a library, so it doesn't use
+         Javadoc to tell people how it works -->
+
+    <target name="doc-public"
+            description="build documentation for mokapot's public API">
+        <javadoc destdir="build-output/doc">
+            <sourcepath refid="runtime-sources"/>
+            <classpath refid="libraries"/>
+            <link href="file:///usr/share/doc/openjdk-8-jre-headless/api"/>
+            <link href="file:///usr/share/doc/libjavassist-java/api/"/>
+            <link href="file:///usr/share/doc/libobjenesis-java/api/"/>
+            <link href="file:///usr/share/doc/libasm-java/api/"/>
+        </javadoc>
+        <exec executable="sed">
+            <arg value="-f"/>
+            <arg value="common/doc-css-postprocess.sed"/>
+            <arg value="-i"/>
+            <arg value="build-output/doc/stylesheet.css"/>
+        </exec>
+    </target>
+
+
+
+    <target name="download-dependencies"
+            description="download production code dependencies">
+        <mkdir dir="./contrib"/>
+
+        <!-- objenesis -->
+        <get src="http://central.maven.org/maven2/org/objenesis/objenesis/2.6/objenesis-2.6.jar"
+             dest="./contrib/objenesis.jar"
+             verbose="on"
+             skipexisting="true" />
+
+        <!-- javassist -->
+        <get src="http://central.maven.org/maven2/org/javassist/javassist/3.23.1-GA/javassist-3.23.1-GA.jar"
+             dest="./contrib/javassist.jar"
+             verbose="on"
+             skipexisting="true" />
+
+        <!-- all of the ASM components -->
+        <get src="http://central.maven.org/maven2/org/ow2/asm/asm/7.0/asm-7.0.jar"
+             dest="./contrib/asm.jar"
+             verbose="on"
+             skipexisting="true" />
+        <get src="http://central.maven.org/maven2/org/ow2/asm/asm-commons/7.0/asm-commons-7.0.jar"
+             dest="./contrib/asm-commons.jar"
+             verbose="on"
+             skipexisting="true" />
+        <get src="http://central.maven.org/maven2/org/ow2/asm/asm-util/7.0/asm-util-7.0.jar"
+             dest="./contrib/asm-util.jar"
+             verbose="on"
+             skipexisting="true" />
+        <get src="http://central.maven.org/maven2/org/ow2/asm/asm-tree/7.0/asm-tree-7.0.jar"
+             dest="./contrib/asm-tree.jar"
+             verbose="on"
+             skipexisting="true" />
+        <get src="http://central.maven.org/maven2/org/ow2/asm/asm-analysis/7.0/asm-analysis-7.0.jar"
+             dest="./contrib/asm-analysis.jar"
+             verbose="on"
+             skipexisting="true" />
+
+        <!-- retrolambda -->
+        <get src="https://oss.sonatype.org/content/groups/public/net/orfjackal/retrolambda/retrolambda/2.5.4/retrolambda-2.5.4.jar"
+             dest="./contrib/retrolambda.jar"
+             verbose="on"
+             skipexisting="true" />
+    </target>
+
+    <target name="download-dependencies-test"
+            description="download dependencies for testing">
+        <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.2.0/junit-platform-console-standalone-1.2.0.jar"
+             dest="./contrib/junit.jar"
+             verbose="on"
+             skipexisting="true" />
+    </target>
+
+
+</project>
